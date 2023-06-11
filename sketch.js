@@ -7,12 +7,17 @@ let navBtn;
 let humanText="";
 let boText = "";
 let speechRec;
-// let myVoice;
+let myVoice;
 
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  background('#000080');
+  background('#0087a4');
+
+  //RiveScript
+  bot = new RiveScript(); //load library
+
+  loadBot();
 
 
   imageMode(CENTER); //adjust image mode
@@ -40,12 +45,12 @@ function setup() {
     navBtn.position(width-150,300);
     navBtn.size(100);
     navBtn.mousePressed(navigate);
-    navBtn.addClass("btn btn-warning")
+    navBtn.addClass("btn btn-warning");
 
-    // let myVoice =new p5.Speech();
-    // myVoice.speak("say anything");
+    myVoice =new p5.Speech();
+    myVoice.speak("hello");
 
-  // myVoice = new p5.Speech();
+  myVoice = new p5.Speech();
   speechRec = new p5.SpeechRec('en-us',gotSpeech);
   gotSpeech();
   speechRec.start(true,false);
@@ -65,13 +70,22 @@ function gotSpeech(){
     myVoice.speak(speechRec.resultString);
 
     humanText = speechRec.resultString;
+    // getResponse();
   }
+}
+
+
+async function loadBot() {
+ 
+  await bot.loadFile('botbrain.rive.txt'); // wait for promise to resolve then loadfile
+ 
 }
 
 function submitQuestion(){
   setTimeout( () =>{
     console.log("aaaaaaaa")
     humanText = inp.value();
+    getResponse();
   }, 2000)
 }
 
@@ -83,6 +97,20 @@ function navigate(){
   //
   inp.hide();// hide text area
   sendBtn.hide();//hide send btn
+}
+
+async function getResponse(){
+    
+  //--------------------bot response----------------------     
+  //sort replies before running the bot
+  bot.sortReplies();
+  //wait for the promise to be returned(?)before loading the reply
+  let response = await bot.reply('local-user', humanText);
+  //display response
+  console.log(response);
+  
+  boText = response;
+  
 }
 
 function draw() {
@@ -103,13 +131,13 @@ function draw() {
   text("> Human text:" + humanText, (width/15), height-200);
 
   // if else bot statements
-  if (humanText.includes("hello")){
-    boText ="hello there!"
-  }else if (humanText.includes("good morning")){
-    boText = "guten morgen"
-  }else if( humanText != ""){
-    boText = "I cannot understand u, please ask again"
-  }
+  // if (humanText.includes("hello")){
+  //   boText ="hello there!"
+  // }else if (humanText.includes("good morning")){
+  //   boText = "guten morgen"
+  // }else if( humanText != ""){
+  //   boText = "I cannot understand u, please ask again"
+  // }
   // draw bot text inside the box
   let padding =20;
   textSize(20);
@@ -117,6 +145,7 @@ function draw() {
   strokeWeight(1);
   stroke(20);
   text(boText +": Bot respond <", rectX, rectY+ (3*padding) ,windowWidth -75,190);
+  // myVoice.speak(boText);
 
   }
   //gotSpeech();
